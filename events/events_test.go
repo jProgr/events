@@ -64,6 +64,19 @@ func TestBuildsNewFacadeDispatcher(test *testing.T) {
     }
 }
 
+func TestFailsToBuildADispatcherOnWrongConfig(test *testing.T) {
+    _, err := NewDispatcher(func(config *Config) {
+        config.ShouldWait(false, nil)
+    })
+
+    if err == nil {
+        test.Fatal("There should be an error when creating a dispatcher that does not wait and has no sync.WaitGroup")
+    }
+    if _, ok := err.(*AsyncConfigError); !ok {
+        test.Fatal("The error should be of type AsyncConfigError")
+    }
+}
+
 func TestRegistersEvents(test *testing.T) {
     listener := func(_ Event) {}
     dispatcher, _ := NewDispatcher()
