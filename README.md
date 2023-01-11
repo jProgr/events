@@ -7,7 +7,7 @@ Inspired by Laravel's events, this package provides an observer abstraction that
 Create a new event dispatcher:
 
 ```golang
-dispatcher := events.NewDispatcher()
+dispatcher, _ := events.NewDispatcher()
 ```
 
 Register event IDs and listeners:
@@ -44,12 +44,14 @@ package one
 import "github.com/jProgr/events"
 
 func f() {
-    events.NewDispatcher(func(config *events.Config) {
+    _, err := events.NewDispatcher(func(config *events.Config) {
         // This makes this dispatcher to be stored in
         // the package and makes it available by just
         // importing events.
         config.AsFacade(true)
     })
+    // Always check for errors when creating a dispatcher
+    // with configuration.
 
     // Register directly on the package, without calling
     // the dispatcher.
@@ -79,7 +81,7 @@ The default execution order of listeners is just one after the other in the goro
 To wait on every goroutine to finish:
 
 ```golang
-dispatcher := events.NewDispatcher(func(config *events.Config) {
+dispatcher, err := events.NewDispatcher(func(config *events.Config) {
     config.ShouldAsync(true)
 })
 ```
@@ -88,7 +90,7 @@ To continue immediately after triggering an event:
 
 ```golang
 waitGroup := new(sync.WaitGroup)
-dispatcher := events.NewDispatcher(func(config *events.Config) {
+dispatcher, err := events.NewDispatcher(func(config *events.Config) {
     config.ShouldAsync(true)
     config.ShouldWait(false, waitGroup)
 })

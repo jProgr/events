@@ -5,18 +5,18 @@
 //
 // Create a new event dispatcher:
 //
-//	dispatcher := events.NewDispatcher()
+//  dispatcher, _ := events.NewDispatcher()
 //
 // Register event IDs and listeners:
 //
-//	const SomeEventId events.EventId = "Some description"
+//  const SomeEventId events.EventId = "Some description"
 //
-//	listener := func(event events.Event) {
-//	    eventData := event.Get().(*SomeType)
+//  listener := func(event events.Event) {
+//      eventData := event.Get().(*SomeType)
 //
-//	    // Do something with eventData
-//	}
-//	dispatcher.Register(SomeEventId, listener)
+//      // Do something with eventData
+//  }
+//  dispatcher.Register(SomeEventId, listener)
 //
 // It is possible to register multiple listeners for the same event ID.
 // A listener is just a function that receives an events.Event and returns
@@ -26,8 +26,8 @@
 //
 // Then one can dispatch an event using:
 //
-//	event := events.Make(SomeEventId, &someData)
-//	dispatcher.Dispatch(event)
+//  event := events.Make(SomeEventId, &someData)
+//  dispatcher.Dispatch(event)
 //
 // Listeners will be executed one after the other in the registred order
 // (or with goroutines if configured that way). someData will be available
@@ -40,31 +40,33 @@
 // available package wide; useful for quick prototypes to avoid passing the
 // dispatcher too deeply the call chain:
 //
-//	package one
+//  package one
 //
-//	import "github.com/jProgr/events"
+//  import "github.com/jProgr/events"
 //
-//	func f() {
-//	    events.NewDispatcher(func(config *events.Config) {
-//	        // This makes this dispatcher to be stored in
-//	        // the package and makes it available by just
-//	        // importing events.
-//	        config.AsFacade(true)
-//	    })
+//  func f() {
+//      _, err := events.NewDispatcher(func(config *events.Config) {
+//          // This makes this dispatcher to be stored in
+//          // the package and makes it available by just
+//          // importing events.
+//          config.AsFacade(true)
+//      })
+//      // Always check for errors when creating a dispatcher
+//      // with configuration.
 //
-//	    // Register directly on the package, without calling
-//	    // the dispatcher.
-//	    events.Register(SomeEventId, someListener)
-//	}
+//      // Register directly on the package, without calling
+//      // the dispatcher.
+//      events.Register(SomeEventId, someListener)
+//  }
 //
-//	package two
+//  package two
 //
-//	import "github.com/jProgr/events"
+//  import "github.com/jProgr/events"
 //
-//	func g() {
-//	    // Dispatch directly by just importing the package
-//	    events.Dispatch(events.Make(SomeEventId, &someData))
-//	}
+//  func g() {
+//      // Dispatch directly by just importing the package
+//      events.Dispatch(events.Make(SomeEventId, &someData))
+//  }
 //
 // In the example, f() should be run before g() for everything to work. Calling
 // Register() or Dispatch() directly on the package without configuring a dispatcher
@@ -83,17 +85,17 @@
 //
 // To wait on every goroutine to finish:
 //
-//	dispatcher := events.NewDispatcher(func(config *events.Config) {
-//	    config.ShouldAsync(true)
-//	})
+//  dispatcher, err := events.NewDispatcher(func(config *events.Config) {
+//      config.ShouldAsync(true)
+//  })
 //
 // To continue immediately after triggering an event:
 //
-//	waitGroup := new(sync.WaitGroup)
-//	dispatcher := events.NewDispatcher(func(config *events.Config) {
-//	    config.ShouldAsync(true)
-//	    config.ShouldWait(false, waitGroup)
-//	})
+//  waitGroup := new(sync.WaitGroup)
+//  dispatcher, err := events.NewDispatcher(func(config *events.Config) {
+//      config.ShouldAsync(true)
+//      config.ShouldWait(false, waitGroup)
+//  })
 //
 // Failing to provide a sync.WaitGroup instance will result in an error of type
 // events.AsyncConfigError. On this mode the caller is responsible for managing the WaitGroup
