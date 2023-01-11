@@ -40,12 +40,8 @@ func (config *Config) AsFacade(isFacade bool) *Config {
 // the execution until every listener is done. On shouldWait = true execution is
 // blocked until listeners are done, on shouldWait = false execution continues immediatly
 // after triggering an event. In the last case, a *sync.WaitGroup should be provided or
-// an error will be returned.
-func (config *Config) ShouldWait(shouldWait bool, waitGroup *sync.WaitGroup) error {
-    if !shouldWait && waitGroup == nil {
-        return newAsyncConfigError("When waiting for goroutines is managed outside the package, a `sync.waitGroup` instance should be provided")
-    }
-
+// an error will be returned from NewDispatcher.
+func (config *Config) ShouldWait(shouldWait bool, waitGroup *sync.WaitGroup) *Config {
     config.shouldWait = shouldWait
     config.waitGroup = waitGroup
 

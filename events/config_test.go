@@ -36,31 +36,22 @@ func TestTogglesFacade(test *testing.T) {
 func TestTogglesWaiting(test *testing.T) {
     config := newDefaultConfig()
 
-    err := config.ShouldWait(true, nil)
-    if err != nil {
-        test.Fatal("`err` should be `nil` on `ShouldWait(true, nil)`")
-    }
+    config.ShouldWait(true, nil)
     if !config.shouldWait || config.waitGroup != nil {
         test.Fatal("`config.shouldWait` should be `true` and `config.waitGroup` should be `nil`")
     }
 
-    err = config.ShouldWait(true, new(sync.WaitGroup))
-    if err != nil {
-        test.Fatal("`err` should be `nil` on `ShouldWait(true, new(sync.WaitGroup))`")
-    }
+    config.ShouldWait(true, new(sync.WaitGroup))
     if !config.shouldWait || config.waitGroup == nil {
         test.Fatal("`config.shouldWait` should be `true` and `config.waitGroup` shouldn't be `nil`")
     }
 
-    err = config.ShouldWait(false, nil)
-    if _, ok := err.(*AsyncConfigError); !ok {
-        test.Fatal("`err` should be a `AsyncConfigError`")
+    config.ShouldWait(false, nil)
+    if config.shouldWait || config.waitGroup != nil {
+        test.Fatal("`config.shouldWait` should be `false` and `config.waitGroup` should be `nil`")
     }
 
-    err = config.ShouldWait(false, new(sync.WaitGroup))
-    if err != nil {
-        test.Fatal("`err` should be `nil` on `ShouldWait(false, new(sync.WaitGroup))`")
-    }
+    config.ShouldWait(false, new(sync.WaitGroup))
     if config.shouldWait || config.waitGroup == nil {
         test.Fatal("`config.shouldWait` should be `false` and `config.waitGroup` shouldn't be `nil`")
     }

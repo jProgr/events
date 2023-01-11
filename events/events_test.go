@@ -17,8 +17,11 @@ type dto2 struct {
 }
 
 func TestBuildsNewDefaultDispatcher(test *testing.T) {
-    dispatcher := NewDispatcher()
+    dispatcher, err := NewDispatcher()
 
+    if err != nil {
+        test.Fatal("There shouldn't be an error when creating a default dispatcher")
+    }
     if dispatcher.listeners == nil {
         test.Fatal("`dispatcher.listeners` should be a map")
     }
@@ -33,20 +36,26 @@ func TestBuildsNewDefaultDispatcher(test *testing.T) {
 }
 
 func TestBuildsNewAsyncDispatcher(test *testing.T) {
-    dispatcher := NewDispatcher(func(config *Config) {
+    dispatcher, err := NewDispatcher(func(config *Config) {
         config.ShouldAsync(true)
     })
 
+    if err != nil {
+        test.Fatal("An async dispatcher shouldn't produce an error")
+    }
     if !dispatcher.config.isAsync {
         test.Fatal("This dispatcher should be async")
     }
 }
 
 func TestBuildsNewFacadeDispatcher(test *testing.T) {
-    dispatcher := NewDispatcher(func(config *Config) {
+    dispatcher, err := NewDispatcher(func(config *Config) {
         config.AsFacade(true)
     })
 
+    if err != nil {
+        test.Fatal("A facade dispatcher shouldn't produce an error")
+    }
     if !dispatcher.config.isFacade {
         test.Fatal("This dispatcher should be a facade")
     }
@@ -57,8 +66,8 @@ func TestBuildsNewFacadeDispatcher(test *testing.T) {
 
 func TestRegistersEvents(test *testing.T) {
     listener := func(_ Event) {}
-    dispatcher := NewDispatcher().
-        Register(EventA, listener)
+    dispatcher, _ := NewDispatcher()
+    dispatcher.Register(EventA, listener)
 
     listeners, ok := dispatcher.listeners[EventA]
     if !ok {
@@ -81,7 +90,8 @@ func TestTriggersListeners(test *testing.T) {
         dto := event.Get().(*dto)
         dto.data = dto.data + 1
     }
-    dispatcher := NewDispatcher().
+    dispatcher, _ := NewDispatcher()
+    dispatcher.
         Register(EventA, listener).
         Register(EventB, listener)
 
@@ -107,9 +117,10 @@ func TestTriggersListenersAsync(test *testing.T) {
         dto.listenerB = true
     }
 
-    dispatcher := NewDispatcher(func(config *Config) {
+    dispatcher, _ := NewDispatcher(func(config *Config) {
         config.ShouldAsync(true)
-    }).
+    })
+    dispatcher.
         Register(EventA, listenerA).
         Register(EventA, listenerB)
 

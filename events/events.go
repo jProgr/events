@@ -34,28 +34,43 @@ type Dispatcher struct {
 //      config.ShouldAsync(true)
 //      config.ShouldWait(false, waitGroup)
 //  })
-func NewDispatcher(configurers ...func(*Config)) *Dispatcher {
-    config := newDefaultConfig()
-    for _, configurer := range configurers {
-        configurer(config)
-    }
-
-    waitGroup := config.waitGroup
-    if waitGroup == nil {
-        waitGroup = new(sync.WaitGroup)
+//
+// When creating a default dispatcher, no configuration, it is safe to ignore the error;
+// it will be nil.
+func NewDispatcher(configurers ...func(*Config)) (*Dispatcher, error) {
+    config, err := getConfig(configurers)
+    if err != nil {
+        return &Dispatcher{}, err
     }
 
     dispatcher := &Dispatcher{
         listeners: make(map[EventId][]Listener),
         config:    config,
-        waitGroup: waitGroup,
+        waitGroup: config.waitGroup,
     }
 
     if config.isFacade {
         facade = dispatcher
     }
 
-    return dispatcher
+    return dispatcher, nil
+}
+
+func getConfig(configurers []func(*Config)) (*Config, error) {
+    config := newDefaultConfig()
+    for _, configurer := range configurers {
+        configurer(config)
+    }
+
+    if !config.shouldWait && config.waitGroup == nil {
+        return config, newAsyncConfigError("When waiting for goroutines is managed outside the package, a `sync.waitGroup` instance should be provided")
+    }
+
+    if config.waitGroup == nil {
+        config.waitGroup = new(sync.WaitGroup)
+    }
+
+    return config, nil
 }
 
 // Register adds to the internal map of event IDs and listeners the arguments provided.
